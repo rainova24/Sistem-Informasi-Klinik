@@ -1,3 +1,4 @@
+esources\views\auth\login.blade.php
 <!DOCTYPE html>
 <html lang="en">
 
@@ -34,7 +35,10 @@
       font-size: 12px;
       margin-top: 5px;
       display: none;
-      color: #e74a3b;
+    }
+    
+    .invalid-feedback {
+      display: block;
     }
     
     .requirements-list {
@@ -42,15 +46,14 @@
       padding-left: 10px;
       margin-top: 5px;
       font-size: 12px;
-      display: none;
     }
     
     .requirements-list li.valid {
-      color: #1cc88a;
+      color: green;
     }
     
     .requirements-list li.invalid {
-      color: #e74a3b;
+      color: red;
     }
   </style>
 
@@ -77,7 +80,7 @@
                       <input type="email" class="form-control form-control-user @error('email') is-invalid @enderror"
                         name="email" id="email" value="{{ old('email') }}" required autocomplete="email"
                         placeholder="Email Address">
-                      <div id="emailValidationMessage" class="validation-message"></div>
+                      <div id="emailValidationMessage" class="validation-message text-danger"></div>
                       @error('email')
                       <span class="invalid-feedback" role="alert">
                         <strong>{{ $message }}</strong>
@@ -88,7 +91,7 @@
                       <input type="password"
                         class="form-control form-control-user @error('password') is-invalid @enderror" name="password"
                         id="password" required autocomplete="current-password" placeholder="Password">
-                      <div id="passwordValidationMessage" class="validation-message"></div>
+                      <div id="passwordValidationMessage" class="validation-message text-danger"></div>
                       <ul id="passwordRequirements" class="requirements-list">
                         <li id="length" class="invalid">Minimal 8 karakter</li>
                         <li id="uppercase" class="invalid">Minimal 1 huruf besar</li>
@@ -105,7 +108,7 @@
                           Me</label>
                       </div>
                     </div>
-                    <button type="submit" class="btn btn-primary btn-user btn-block" id="loginButton">
+                    <button type="submit" class="btn btn-primary btn-user btn-block" id="loginButton" disabled>
                       Login
                     </button>
                     <hr>
@@ -145,22 +148,22 @@
       const loginButton = document.getElementById('loginButton');
       const emailValidationMessage = document.getElementById('emailValidationMessage');
       const passwordValidationMessage = document.getElementById('passwordValidationMessage');
-      const passwordRequirements = document.getElementById('passwordRequirements');
+      
+      // Elemen persyaratan password
+      const lengthRequirement = document.getElementById('length');
+      const uppercaseRequirement = document.getElementById('uppercase');
+      const lowercaseRequirement = document.getElementById('lowercase');
+      const numberRequirement = document.getElementById('number');
+      const symbolRequirement = document.getElementById('symbol');
       
       // Tampilkan persyaratan password saat input password difokuskan
       passwordInput.addEventListener('focus', function() {
-        passwordRequirements.style.display = 'block';
-      });
-      
-      // Sembunyikan persyaratan password saat klik di luar input
-      document.addEventListener('click', function(event) {
-        if (event.target !== passwordInput && !passwordRequirements.contains(event.target)) {
-          passwordRequirements.style.display = 'none';
-        }
+        document.getElementById('passwordRequirements').style.display = 'block';
       });
       
       // Validasi email
       function validateEmail(email) {
+        // Regex untuk validasi email
         const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
         return emailRegex.test(email);
       }
@@ -169,30 +172,43 @@
       function validatePassword(password) {
         // Cek panjang minimal 8 karakter
         const isLengthValid = password.length >= 8;
-        document.getElementById('length').className = isLengthValid ? 'valid' : 'invalid';
+        lengthRequirement.className = isLengthValid ? 'valid' : 'invalid';
         
         // Cek minimal 1 huruf besar
         const hasUppercase = /[A-Z]/.test(password);
-        document.getElementById('uppercase').className = hasUppercase ? 'valid' : 'invalid';
+        uppercaseRequirement.className = hasUppercase ? 'valid' : 'invalid';
         
         // Cek minimal 1 huruf kecil
         const hasLowercase = /[a-z]/.test(password);
-        document.getElementById('lowercase').className = hasLowercase ? 'valid' : 'invalid';
+        lowercaseRequirement.className = hasLowercase ? 'valid' : 'invalid';
         
         // Cek minimal 1 angka
         const hasNumber = /[0-9]/.test(password);
-        document.getElementById('number').className = hasNumber ? 'valid' : 'invalid';
+        numberRequirement.className = hasNumber ? 'valid' : 'invalid';
         
         // Cek minimal 1 simbol
         const hasSymbol = /[!@#$%^&*()_+\-=\[\]{};':"\\\/|,.<>\/?]/.test(password);
-        document.getElementById('symbol').className = hasSymbol ? 'valid' : 'invalid';
+        symbolRequirement.className = hasSymbol ? 'valid' : 'invalid';
         
         return isLengthValid && hasUppercase && hasLowercase && hasNumber && hasSymbol;
       }
       
       // Fungsi untuk sanitasi input (mencegah SQL injection)
       function sanitizeInput(input) {
+        // Menghapus karakter yang berpotensi berbahaya
         return input.replace(/[\\\"']/g, '');
+      }
+      
+      // Fungsi untuk memeriksa apakah tombol login harus diaktifkan
+      function checkFormValidity() {
+        const isEmailValid = validateEmail(emailInput.value);
+        const isPasswordValid = validatePassword(passwordInput.value);
+        
+        if (isEmailValid && isPasswordValid) {
+          loginButton.disabled = false;
+        } else {
+          loginButton.disabled = true;
+        }
       }
       
       // Event listener untuk input email
@@ -202,12 +218,14 @@
           this.value = sanitizedValue;
         }
         
-        if (!validateEmail(this.value) && this.value.length > 0) {
+        if (validateEmail(this.value)) {
+          emailValidationMessage.style.display = 'none';
+        } else {
           emailValidationMessage.style.display = 'block';
           emailValidationMessage.textContent = 'Masukkan alamat email yang valid.';
-        } else {
-          emailValidationMessage.style.display = 'none';
         }
+        
+        checkFormValidity();
       });
       
       // Event listener untuk input password
@@ -218,13 +236,7 @@
         }
         
         validatePassword(this.value);
-        
-        if (!validatePassword(this.value) && this.value.length > 0) {
-          passwordValidationMessage.style.display = 'block';
-          passwordValidationMessage.textContent = 'Password tidak memenuhi persyaratan keamanan.';
-        } else {
-          passwordValidationMessage.style.display = 'none';
-        }
+        checkFormValidity();
       });
       
       // Validasi form sebelum submit
@@ -243,10 +255,12 @@
           if (!isPasswordValid) {
             passwordValidationMessage.style.display = 'block';
             passwordValidationMessage.textContent = 'Password tidak memenuhi persyaratan keamanan.';
-            passwordRequirements.style.display = 'block';
           }
         }
       });
+      
+      // Jalankan validasi awal
+      checkFormValidity();
     });
   </script>
 

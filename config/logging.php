@@ -100,6 +100,18 @@ return [
         'emergency' => [
             'path' => storage_path('logs/laravel.log'),
         ],
+        'userActivity' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/user-activity.log'),
+            'level' => 'info',
+            'days' => 30,
+        ],
+        'securityEvents' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/security-events.log'),
+            'level' => 'warning',
+            'days' => 90,
+        ],
     ],
 
 ];

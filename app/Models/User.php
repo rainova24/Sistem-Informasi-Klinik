@@ -8,7 +8,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 
-class User extends Authenticatable
+class User extends Authenticatable implements MustVerifyEmail
 {
   use HasApiTokens, HasFactory, Notifiable;
 
@@ -18,12 +18,12 @@ class User extends Authenticatable
    * @var string[]
    */
   protected $guarded = ['id'];
-  // protected $fillable = [
-  //   'name',
-  //   'email',
-  //   'password',
-  // ];
-
+  
+  // Tambahkan validasi password yang kuat
+  public static function passwordRules()
+  {
+      return ['required', 'string', 'min:12', 'regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{12,}$/'];
+  }
   /**
    * The attributes that should be hidden for serialization.
    *

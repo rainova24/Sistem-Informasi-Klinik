@@ -21,8 +21,10 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Auth::routes();
-Route::get('/dashboard', [App\Http\Controllers\HomeController::class, 'index'])->name('home')->middleware('checkRole:dokter,admin,pasien');
+Auth::routes(['verify' => true]);
+Route::get('/dashboard', [App\Http\Controllers\HomeController::class, 'index'])
+    ->name('home')
+    ->middleware(['verified', 'checkRole:dokter,admin,pasien']);
 Route::get('/generate-pdf/{pasien}', [PasienController::class, 'generatePDF'])->name('generatePDF')->middleware('checkRole:dokter,admin');
 Route::get('/', function () {
   return view('auth.login');

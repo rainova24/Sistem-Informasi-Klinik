@@ -177,8 +177,8 @@ return [
     // App\Providers\BroadcastServiceProvider::class,
     App\Providers\EventServiceProvider::class,
     App\Providers\RouteServiceProvider::class,
-
-  ],
+    App\Providers\EncryptionServiceProvider::class, // Tambahkan ini
+],
 
   /*
     |--------------------------------------------------------------------------
